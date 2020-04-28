@@ -26,6 +26,7 @@ import com.example.android.devbyteviewer.network.Network
 import com.example.android.devbyteviewer.network.asDatabaseModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import java.io.IOException
 
 class VideosRepository(private val database: VideosDatabase) {
 
@@ -35,8 +36,13 @@ class VideosRepository(private val database: VideosDatabase) {
 
     suspend fun refreshVideos() {
         withContext(Dispatchers.IO) {
-            val playlists = Network.devbytes.getPlaylist().await()
-            database.videoDao.insertAll(*playlists.asDatabaseModel())
+            try {
+                val playlists = Network.devbytes.getPlaylist().await()
+                database.videoDao.insertAll(*playlists.asDatabaseModel())
+            } catch (networkError: IOException) {
+                // Show an infinite loading spinner if the request fails
+                // challenge exercise: show an error to the user if the network request fails
+            }
         }
     }
 
